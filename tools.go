@@ -1,6 +1,10 @@
 package tools
 
 import (
+	"crypto/md5"
+	"encoding/hex"
+	"io"
+
 	"code.google.com/p/mahonia"
 )
 
@@ -18,4 +22,10 @@ gbk转换为 utf8
 func ConvertGBK2UTF(gbk string) (utf string) {
 	enc := mahonia.NewDecoder("GBK")
 	return enc.ConvertString(gbk)
+}
+
+func MD5(data string) string {
+	m := md5.New()
+	io.WriteString(m, data)
+	return hex.EncodeToString(m.Sum(nil))
 }
