@@ -5,6 +5,9 @@ import (
 	"encoding/hex"
 	"io"
 
+	"reflect"
+	"strings"
+
 	"code.google.com/p/mahonia"
 )
 
@@ -28,4 +31,29 @@ func MD5(data string) string {
 	m := md5.New()
 	io.WriteString(m, data)
 	return hex.EncodeToString(m.Sum(nil))
+}
+
+/**
+把json 的struct 转换为 map
+*/
+func JsonToMap(a interface{}) map[string]interface{} {
+	t := reflect.TypeOf(a)
+	v := reflect.ValueOf(a)
+
+	var data = make(map[string]interface{})
+	for i := 0; i < t.NumField(); i++ {
+		key := t.Field(i).Name
+		value := v.Field(i).Interface()
+		tag := t.Field(i).Tag.Get("json")
+		if tag != "" {
+			if strings.Contains(tag, ",") {
+				ps := strings.Split(tag, ",")
+				key = ps[0]
+			} else {
+				key = tag
+			}
+		}
+		data[key] = value
+	}
+	return data
 }
