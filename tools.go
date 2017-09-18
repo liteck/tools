@@ -3,9 +3,12 @@ package tools
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
+	"fmt"
 	"io"
-
+	"net"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"code.google.com/p/mahonia"
@@ -56,4 +59,54 @@ func JsonToMap(a interface{}) map[string]interface{} {
 		data[key] = value
 	}
 	return data
+}
+
+func GetLocalIp() string {
+	if addrs, err := net.InterfaceAddrs(); err != nil {
+		return "127.0.0.1"
+	} else {
+		for _, a := range addrs {
+			if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+				if ipnet.IP.To4() != nil {
+					return ipnet.IP.String()
+				}
+			}
+		}
+	}
+	return "127.0.0.1"
+}
+
+func ConvertYTOF(yuan string) (fen string, err error) {
+	if err = CheckPriceFormat(yuan); err != nil {
+		return "", err
+	}
+	if f_yuan, err := strconv.ParseFloat(yuan, 32); err != nil {
+		return "", err
+	} else {
+		return fmt.Sprintf("%.f", f_yuan*100), nil
+	}
+}
+
+func ConvertFTOY(fen string) (yuan string, err error) {
+	if f_fen, err := strconv.ParseFloat(fen, 32); err != nil {
+		return "", err
+	} else {
+		return fmt.Sprintf("%.02f", f_fen/100), nil
+	}
+}
+
+func CheckPriceFormat(fee string) error {
+	if len(fee) == 0 {
+		return errors.New("金额不能为空")
+	}
+	if strings.Contains(fee, ".") {
+		arr := strings.Split(fee, ".")
+		if len(arr[1]) <= 2 {
+			return nil
+		} else {
+			return errors.New("金额只支持两位小数")
+		}
+	} else {
+		return nil
+	}
 }
