@@ -1,4 +1,4 @@
-package tools
+package file
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ import (
 /**
 创建文件夹.
 */
-func FileCreateFolder(filePath string ) (err error){
+func CreateFolder(filePath string ) (err error){
 	if filePath == ""{
 		err = errors.New("filePath can not be nil")
 		return
