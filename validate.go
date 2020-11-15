@@ -1,7 +1,6 @@
 package tools
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
@@ -12,9 +11,9 @@ import (
 )
 
 func Valid(ptrInput interface{}) error {
-	if x, err := json.Marshal(ptrInput); err != nil {
-		return err
-	}
+	//if _, err := json.Marshal(ptrInput); err != nil {
+	//	return err
+	//}
 	zh_ch := zh.New()
 	validate := validator.New()
 	uni := ut.New(zh_ch)
