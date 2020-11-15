@@ -39,5 +39,5 @@ func CreateDir(dirs ...string) error {
 			}
 		}
 	}
-	return err
+	return nil
 }
