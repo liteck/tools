@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 func PostForm() {
@@ -35,7 +36,13 @@ func PostJson(url string, jsonData []byte) (data []byte, err error) {
 	return
 }
 
-func Download(url string) (data []byte, err error) {
+type DownloadFile struct {
+	File []byte
+	Url  string
+	Name string
+}
+
+func Download(url string) (file DownloadFile, err error) {
 	var resp *http.Response
 	if resp, err = http.Get(url); err != nil {
 		return
@@ -49,6 +56,12 @@ func Download(url string) (data []byte, err error) {
 		_ = resp.Body.Close()
 	}()
 
-	data, err = ioutil.ReadAll(resp.Body)
+	file.Url = url
+	file.File, err = ioutil.ReadAll(resp.Body)
+	contentDisposition := resp.Header.Get("Content-Disposition")
+	fN := strings.Split(contentDisposition, "filename=")
+	if len(fN) == 2 && len(fN[1]) > 0 {
+		file.Name = fN[1]
+	}
 	return
 }
