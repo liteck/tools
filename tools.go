@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -41,6 +42,31 @@ func JsonToMap(a interface{}) map[string]interface{} {
 		data[key] = value
 	}
 	return data
+}
+
+/**
+map转换为 string.
+对key=value的键值对用&连接起来，略过空值
+并进行key值升序排列
+去除string为空的值,保留 int为 0 的值
+*/
+func MapToStr(m map[string]interface{}) string {
+	//对key进行升序排序.
+	keys := make([]string, 0)
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	//对key=value的键值对用&连接起来，略过空值
+	var str string
+	for _, k := range keys {
+		value := fmt.Sprintf("%v", m[k])
+		if value != "" {
+			str = str + k + "=" + value + "&"
+		}
+	}
+	return strings.TrimRight(str, "&")
 }
 
 func GetLocalIp() string {
