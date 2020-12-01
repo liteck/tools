@@ -8,6 +8,7 @@ import (
 	zh_translations "gopkg.in/go-playground/validator.v9/translations/zh"
 	"reflect"
 	"strings"
+	"time"
 )
 
 func Valid(ptrInput interface{}) error {
@@ -29,6 +30,8 @@ func Valid(ptrInput interface{}) error {
 		return name
 	})
 
+	_ = validate.RegisterValidation("format_time_ymdhms", validateFormatTime)
+
 	if err := validate.Struct(ptrInput); err != nil {
 		// this check is only needed when your code could produce
 		// an invalid value for validation such as interface with nil
@@ -42,4 +45,12 @@ func Valid(ptrInput interface{}) error {
 		}
 	}
 	return nil
+}
+
+func validateFormatTime(fl validator.FieldLevel) bool {
+	if _, err := time.Parse("2006-01-02 15:04:05", fl.Field().String()); err != nil {
+		return false
+	} else {
+		return true
+	}
 }
