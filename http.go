@@ -7,12 +7,13 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 func PostForm(url string, params url.Values) (data []byte, err error) {
+	client := &http.Client{Timeout: time.Second * 3}
 	var resp *http.Response
-
-	if resp, err = http.PostForm(url, params); err != nil {
+	if resp, err = client.PostForm(url, params); err != nil {
 		return
 	}
 	if resp.Body == nil {
