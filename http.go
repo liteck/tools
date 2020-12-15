@@ -5,11 +5,26 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
-func PostForm() {
+func PostForm(url string, params url.Values) (data []byte, err error) {
+	var resp *http.Response
 
+	if resp, err = http.PostForm(url, params); err != nil {
+		return
+	}
+	if resp.Body == nil {
+		err = errors.New("response body is null")
+		return
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	data, err = ioutil.ReadAll(resp.Body)
+	return
 }
 
 func PostJson(url string, jsonData []byte) (data []byte, err error) {
