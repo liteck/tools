@@ -78,8 +78,11 @@ func (q *LQueue) run() {
 			idx++
 			// got task and send to chan
 			q.wg.Add(1)
-			task := q.l.Remove(ele).(*LTask)
-			go q.runTask(task)
+			t := q.l.Remove(ele)
+			printInfo(t)
+			x:= t.(*LTask)
+			printInfo(x)
+			go q.runTask(x)
 		}
 	}
 	q.wg.Wait()
@@ -96,6 +99,7 @@ func (q *LQueue) AddTask(task LTask) {
 	defer q.mux.Unlock()
 	q.mux.Lock()
 	q.l.PushBack(&task)
+	printInfo(&task)
 	task.Prepare()
 	return
 }
