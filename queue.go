@@ -7,8 +7,11 @@ import (
 )
 
 type LTask interface {
-	Prepare()
 	Run()
+}
+
+type LTaskPrepare interface {
+	Prepare()
 }
 
 // 建立一个任务
@@ -78,29 +81,27 @@ func (q *LQueue) run() {
 			idx++
 			// got task and send to chan
 			q.wg.Add(1)
-			t := q.l.Remove(ele)
-			printInfo(t)
-			x:= t.(*LTask)
-			printInfo(x)
-			go q.runTask(x)
+			task := q.l.Remove(ele).(LTask)
+			go q.runTask(task)
 		}
 	}
 	q.wg.Wait()
 	return
 }
 
-func (q *LQueue) runTask(task *LTask) {
+func (q *LQueue) runTask(task LTask) {
 	defer q.wg.Done()
-	(*task).Run()
+	task.Run()
 }
 
 // 增加一个任务
 func (q *LQueue) AddTask(task LTask) {
 	defer q.mux.Unlock()
 	q.mux.Lock()
-	q.l.PushBack(&task)
-	printInfo(&task)
-	task.Prepare()
+	q.l.PushBack(task)
+	if v, ok := task.(LTaskPrepare); ok {
+		v.Prepare()
+	}
 	return
 }
 
