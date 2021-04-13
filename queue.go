@@ -63,6 +63,12 @@ func (q *LQueue) taskListener() {
 			break
 		case <-q.exit: //监听 信号
 			q.ticker.Stop()
+			// 删除所有的数据
+			var next *list.Element
+			for ele := q.l.Front(); ele != nil; ele = next {
+				next = ele.Next()
+				q.l.Remove(ele)
+			}
 			printInfo("LQueue 退出完毕")
 			return
 		}
