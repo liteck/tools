@@ -7,11 +7,8 @@ import (
 )
 
 type LTask interface {
-	Run()
-}
-
-type LTaskPrepare interface {
 	Prepare()
+	Run()
 }
 
 // 建立一个任务
@@ -99,9 +96,7 @@ func (q *LQueue) AddTask(task LTask) {
 	defer q.mux.Unlock()
 	q.mux.Lock()
 	q.l.PushBack(task)
-	if v, ok := task.(LTaskPrepare); ok {
-		v.Prepare()
-	}
+	task.Prepare()
 	return
 }
 
