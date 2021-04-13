@@ -14,6 +14,10 @@ type LTaskPrepare interface {
 	Prepare()
 }
 
+type LTaskDone interface {
+	Done()
+}
+
 // 建立一个任务
 type LQueue struct {
 	// 退出信号.
@@ -92,6 +96,9 @@ func (q *LQueue) run() {
 func (q *LQueue) runTask(task LTask) {
 	defer q.wg.Done()
 	task.Run()
+	if v, ok := task.(LTaskDone); ok {
+		v.Done()
+	}
 }
 
 // 增加一个任务
