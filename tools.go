@@ -140,3 +140,5 @@ func CheckPriceFormat(fee string) error {
 		return nil
 	}
 }
+
+
