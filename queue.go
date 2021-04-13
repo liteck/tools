@@ -10,6 +10,10 @@ type LTask interface {
 	Run()
 }
 
+type LTaskPrepare interface {
+	Prepare()
+}
+
 // 建立一个任务
 type LQueue struct {
 	// 退出信号.
@@ -95,6 +99,9 @@ func (q *LQueue) AddTask(task LTask) {
 	defer q.mux.Unlock()
 	q.mux.Lock()
 	q.l.PushBack(task)
+	if v, ok := task.(LTaskPrepare); ok {
+		v.Prepare()
+	}
 	return
 }
 
