@@ -78,7 +78,7 @@ func (q *LQueue) run() {
 			idx++
 			// got task and send to chan
 			q.wg.Add(1)
-			task := q.l.Remove(ele).(LTask)
+			task := q.l.Remove(ele).(*LTask)
 			go q.runTask(task)
 		}
 	}
@@ -86,16 +86,16 @@ func (q *LQueue) run() {
 	return
 }
 
-func (q *LQueue) runTask(task LTask) {
+func (q *LQueue) runTask(task *LTask) {
 	defer q.wg.Done()
-	task.Run()
+	(*task).Run()
 }
 
 // 增加一个任务
 func (q *LQueue) AddTask(task LTask) {
 	defer q.mux.Unlock()
 	q.mux.Lock()
-	q.l.PushBack(task)
+	q.l.PushBack(&task)
 	task.Prepare()
 	return
 }
