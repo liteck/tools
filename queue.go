@@ -18,10 +18,13 @@ type LTaskDone interface {
 	Done()
 }
 
+type LTaskRunning struct {
+	// 运行的起始时间
+	StartTime int64
+}
+
 // 建立一个任务
 type LQueue struct {
-	// 运行的起始时间
-	startTime int64
 	// 退出信号.
 	exit chan int
 	// 时间
@@ -32,6 +35,7 @@ type LQueue struct {
 	maxTaskCount int
 	wg           sync.WaitGroup
 	mux          *sync.Mutex
+	state        LTaskRunning
 }
 
 /*
@@ -52,7 +56,8 @@ func (q *LQueue) init0(maxTaskCount int) {
 	q.l = list.New()
 	q.wg = sync.WaitGroup{}
 	q.mux = new(sync.Mutex)
-	q.startTime = time.Now().In(gmtLoc).Unix()
+	q.state = LTaskRunning{}
+	q.state.StartTime = time.Now().In(gmtLoc).Unix()
 	go q.taskListener()
 	return
 }
@@ -108,6 +113,12 @@ func (q *LQueue) runTask(task LTask) {
 	if v, ok := task.(LTaskDone); ok {
 		v.Done()
 	}
+}
+
+// 运行的状态
+func (q *LQueue) RunningState() (r LTaskRunning) {
+	r.StartTime = q.state.StartTime
+	return r
 }
 
 // 增加一个任务

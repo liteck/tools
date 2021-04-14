@@ -32,6 +32,10 @@ func (q *LQueues) AddTask(key string, task LTask) {
 	return
 }
 
+func (q *LQueues) Get(key string) (v interface{}, ok bool) {
+	return q.running.Load(key)
+}
+
 func (q *LQueues) Close(key string) {
 	printInfo("LQueues 准备关闭 " + key + " 的队列")
 	var n *LQueue
