@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var gmtLoc = time.FixedZone("GMT", 0)
+var UtcLoc = time.FixedZone("GMT", 8)
 
 func GenUUID() string {
 	return strings.ToUpper(strings.Replace(uuid.Must(uuid.NewV4(), nil).String(), "-", "", -1))
@@ -31,7 +31,7 @@ func String(v interface{}) string {
 }
 
 func GetNow() string {
-	return time.Now().In(gmtLoc).Format("2006-01-02 15:04:05")
+	return time.Now().In(UtcLoc).Format("2006-01-02 15:04:05")
 }
 
 func GenNo(prefix, suffix string) string {

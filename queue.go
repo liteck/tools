@@ -57,7 +57,7 @@ func (q *LQueue) init0(maxTaskCount int) {
 	q.wg = sync.WaitGroup{}
 	q.mux = new(sync.Mutex)
 	q.state = LTaskRunning{}
-	q.state.StartTime = time.Now().In(gmtLoc).Unix()
+	q.state.StartTime = time.Now().In(UtcLoc).Unix()
 	go q.taskListener()
 	return
 }
