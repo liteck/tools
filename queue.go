@@ -3,6 +3,7 @@ package tools
 import (
 	"container/list"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -23,6 +24,15 @@ type LTaskRunning struct {
 	StartTime int64
 }
 
+type LRunning int32
+
+// function that adds addr and delta
+func (running *LRunning) add(delta int32) int32 {
+	// Calling AddInt32() function
+	// with its parameter
+	return atomic.AddInt32((*int32)(running), delta)
+}
+
 // 建立一个任务
 type LQueue struct {
 	// 退出信号.
@@ -33,7 +43,8 @@ type LQueue struct {
 	l *list.List
 	// 最大数量
 	maxTaskCount int
-	wg           sync.WaitGroup
+	// 运行数
+	runningTaskCount LRunning
 	mux          *sync.Mutex
 	state        LTaskRunning
 }
@@ -53,8 +64,8 @@ func (q *LQueue) init0(maxTaskCount int) {
 	q.exit = make(chan int)
 	q.ticker = time.NewTicker(time.Second)
 	q.maxTaskCount = maxTaskCount
+	q.runningTaskCount = 0
 	q.l = list.New()
-	q.wg = sync.WaitGroup{}
 	q.mux = new(sync.Mutex)
 	q.state = LTaskRunning{}
 	q.state.StartTime = time.Now().Unix()
@@ -87,28 +98,25 @@ func (q *LQueue) run() {
 	defer q.mux.Unlock()
 	q.mux.Lock()
 
-	idx := 0
-	for {
-		if idx >= q.maxTaskCount {
-			break
-		}
-		if ele := q.l.Front(); ele == nil {
-			// list is empty, break and wait
-			break
-		} else {
-			idx++
-			// got task and send to chan
-			q.wg.Add(1)
-			task := q.l.Remove(ele).(LTask)
-			go q.runTask(task)
-		}
+	if int(q.runningTaskCount) >= q.maxTaskCount {
+		return
 	}
-	q.wg.Wait()
-	return
+
+	if ele := q.l.Front(); ele == nil {
+		// list is empty, break and wait
+		return
+	} else {
+		task := q.l.Remove(ele).(LTask)
+		go q.runTask(task)
+	}
 }
 
 func (q *LQueue) runTask(task LTask) {
-	defer q.wg.Done()
+	defer func() {
+		q.runningTaskCount.add(-1)
+	}()
+	q.runningTaskCount.add(1)
+
 	task.Run()
 	if v, ok := task.(LTaskDone); ok {
 		v.Done()
